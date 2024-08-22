@@ -107,7 +107,7 @@ You only need a web browser (such as Mozilla Firefox) besides the following soft
 
 ## Usage
 
-Open the web page through: [http://localhost:8080](http://127.0.0.1:8080)
+You can run the app as the following:
 
    ```sh
    go run . 2525 localhost
