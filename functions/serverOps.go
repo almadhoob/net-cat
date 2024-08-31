@@ -10,7 +10,10 @@ func (s *Server) Start() error {
 	ln, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
 		return err
+	} else {
+		fmt.Println("Listening on the port", s.listenAddr)
 	}
+
 	defer ln.Close()
 	s.ln = ln
 
