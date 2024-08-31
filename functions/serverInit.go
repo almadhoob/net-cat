@@ -37,7 +37,7 @@ func NewServer(listenAddr string) *Server {
 }
 
 func WelcomeMessage() []byte {
-	file, err := os.Open("/assets/welcome.txt")
+	file, err := os.Open("assets/welcome.txt")
 	if err != nil {
 		log.Fatal("Error opening txt file")
 	}
