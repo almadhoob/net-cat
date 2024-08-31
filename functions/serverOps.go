@@ -1,0 +1,118 @@
+package netcat
+
+import (
+	"fmt"
+	"net"
+	"strings"
+)
+
+func (s *Server) Start() error {
+	ln, err := net.Listen("tcp", s.listenAddr)
+	if err != nil {
+		return err
+	}
+	defer ln.Close()
+	s.ln = ln
+
+	go s.acceptLoop()
+
+	<-s.quitch
+	close(s.msgch)
+
+	return nil
+}
+
+func (s *Server) acceptLoop() {
+	for {
+		conn, err := s.ln.Accept()
+		if err != nil {
+			fmt.Println("accept error:", err)
+			continue
+		}
+
+		s.mu.Lock()
+		if s.length >= s.maxClients {
+			s.mu.Unlock()
+			conn.Write([]byte("The Chat is Maximum \n"))
+			conn.Close()
+			fmt.Println("The Chat is Maximum")
+			continue
+		}
+		s.length++
+		s.mu.Unlock()
+
+		s.clientMu.Lock()
+		s.clients[conn] = ""
+		s.clientMu.Unlock()
+
+		fmt.Println("new connection to the server:", conn.RemoteAddr())
+		go s.readLoop(conn)
+	}
+}
+
+func (s *Server) readLoop(conn net.Conn) {
+	defer conn.Close()
+	defer func() {
+		s.mu.Lock()
+		s.length--
+		s.mu.Unlock()
+
+		s.clientMu.Lock()
+		delete(s.clients, conn)
+		s.clientMu.Unlock()
+	}()
+
+	conn.Write(WelcomeMessage())
+
+	nameBuf := make([]byte, 256)
+	n, err := conn.Read(nameBuf)
+	if err != nil {
+		fmt.Println("Error reading name:", err)
+		return
+	}
+
+	name := string(nameBuf[:n-1])
+
+	if name == "" {
+		conn.Write([]byte("No name provided \n"))
+		return
+	}
+
+	s.clientMu.Lock()
+	s.clients[conn] = name
+	s.clientMu.Unlock()
+	s.broadcast([]byte(name + " joined the Chat \n"))
+
+	buf := make([]byte, 2048)
+	for {
+
+		n, err := conn.Read(buf)
+		if err != nil {
+			fmt.Printf("%s left the Chat \n", conn.RemoteAddr())
+			s.broadcast([]byte(name + " left the Chat \n"))
+			break
+		}
+		msg := buf[:n]
+
+		messageStr := string(msg)
+		messageStr = strings.TrimSpace(messageStr)
+		if len(messageStr) == 0 {
+			conn.Write([]byte("The Message is Empty \n"))
+			continue
+		}
+		msg = append([]byte("["+name+"]"), []byte(messageStr+"\n")...)
+		s.broadcast(msg)
+
+	}
+}
+
+func (s *Server) broadcast(msg []byte) {
+	s.clientMu.Lock()
+	defer s.clientMu.Unlock()
+
+	for client, name := range s.clients {
+		if name != "" {
+			client.Write(msg)
+		}
+	}
+}
