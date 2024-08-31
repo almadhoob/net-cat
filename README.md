@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/almadhoob/net-cat">
-    <img src="logo.png" alt="Logo" width="256" height="256">
+    <img src="assets/logo.png" alt="Logo" width="256" height="256">
   </a>
 
 <h3 align="center">NetCat Server-Client</h3>
@@ -91,14 +91,14 @@ You only need a web browser (such as Mozilla Firefox) besides the following soft
 2. Build the app
 
    ```sh
-   go build -o app.run
-   chmod +x app.run
+   go build -o TCPChat
+   chmod +x TCPChat
    ```
 
 3. Run the app
 
    ```sh
-   ./app.run
+   ./TCPChat
    ```
 
 <p align="right">(<a href="#net-cat">back to top</a>)</p>
@@ -107,10 +107,10 @@ You only need a web browser (such as Mozilla Firefox) besides the following soft
 
 ## Usage
 
-You can run the app as the following:
+You can run the server as the following with an optional port number:
 
    ```sh
-   go run . 2525 localhost
+   ./TCPChat 2525
    ```
 
 <p align="right">(<a href="#net-cat">back to top</a>)</p>
