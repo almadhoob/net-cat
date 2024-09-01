@@ -20,7 +20,6 @@ func (s *Server) Start() error {
 	go s.acceptLoop()
 
 	<-s.quitch
-	close(s.msgch)
 
 	return nil
 }
@@ -80,6 +79,10 @@ func (s *Server) readLoop(conn net.Conn) {
 		conn.Write([]byte("No name provided \n"))
 		return
 	}
+	if s.NameCheck(name) == true {
+		conn.Write([]byte("The name is used \n"))
+		return
+	}
 
 	s.clientMu.Lock()
 	s.clients[conn] = name
@@ -107,6 +110,16 @@ func (s *Server) readLoop(conn net.Conn) {
 		s.broadcast(msg)
 
 	}
+}
+func (s *Server) NameCheck(name string) bool{
+	s.clientMu.Lock()
+	defer s.clientMu.Unlock()
+	for _, name1 := range s.clients {
+	if name == name1 {
+		return true
+	}
+	}
+	return false
 }
 
 func (s *Server) broadcast(msg []byte) {

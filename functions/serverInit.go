@@ -8,16 +8,11 @@ import (
 	"sync"
 )
 
-type Message struct {
-	from    string
-	payload []byte
-}
 
 type Server struct {
 	listenAddr string
 	ln         net.Listener
 	quitch     chan struct{}
-	msgch      chan Message
 	length     int
 	maxClients int
 	mu         sync.Mutex
@@ -29,7 +24,6 @@ func NewServer(listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		quitch:     make(chan struct{}),
-		msgch:      make(chan Message, 10),
 		length:     0,
 		maxClients: 10,
 		clients:    make(map[net.Conn]string),
