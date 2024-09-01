@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 func (s *Server) Start() error {
@@ -106,7 +107,10 @@ func (s *Server) readLoop(conn net.Conn) {
 			conn.Write([]byte("The Message is Empty \n"))
 			continue
 		}
-		msg = append([]byte("["+name+"]"), []byte(messageStr+"\n")...)
+		now := time.Now()
+		formatted := now.Format("2006-01-02 15:04:05")
+		msg = append([]byte("["+name+"]:"), []byte(messageStr+"\n")...)
+		msg = append([]byte("["+formatted +"]") , msg...)
 		s.broadcast(msg)
 
 	}
